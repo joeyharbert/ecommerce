@@ -1,5 +1,7 @@
 package com.joeyharbert.ecommerce.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.joeyharbert.ecommerce.business.ProductsService;
 import com.joeyharbert.ecommerce.data.Product;
 import org.junit.jupiter.api.BeforeAll;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -16,6 +19,7 @@ import java.util.ArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -72,6 +76,20 @@ public class ProductsControllerTest {
 
         MvcResult result = this.mockMvc.perform(get("/products/{id}", 1)).andDo(print())
                 .andExpect(status().isOk())
+                .andReturn();
+
+        String response = result.getResponse().getContentAsString();
+        assertThat(response).isEqualTo("{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null}");
+    }
+
+    @Test
+    public void givenProduct_whenAddProduct_thenStatus201() throws Exception {
+        when(productsService.addProduct(any(Product.class))).thenReturn(testProduct);
+
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(testProduct);
+        MvcResult result = this.mockMvc.perform(post("/products").contentType(MediaType.APPLICATION_JSON).content(json)).andDo(print())
+                .andExpect(status().isCreated())
                 .andReturn();
 
         String response = result.getResponse().getContentAsString();
