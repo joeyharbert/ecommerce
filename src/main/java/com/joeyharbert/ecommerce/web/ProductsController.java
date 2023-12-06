@@ -2,10 +2,8 @@ package com.joeyharbert.ecommerce.web;
 
 import com.joeyharbert.ecommerce.business.ProductsService;
 import com.joeyharbert.ecommerce.data.Product;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,4 +20,8 @@ public class ProductsController {
 
     @GetMapping(path = "/products/{id}")
     public @ResponseBody Product getProductById(@PathVariable(value="id") Long id) { return this.productsService.getProductById(id); }
+
+    @PostMapping(path = "/products")
+    @ResponseStatus(HttpStatus.CREATED)
+    public  @ResponseBody Product addProduct(@RequestBody Product product) { return this.productsService.addProduct(product); }
 }

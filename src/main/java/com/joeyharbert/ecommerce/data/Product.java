@@ -3,11 +3,14 @@ package com.joeyharbert.ecommerce.data;
 import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
 
+import java.sql.Date;
+import java.sql.Timestamp;
+
 @Entity
 @Table(name="products")
 public class Product {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
     private long id;
 
@@ -22,6 +25,28 @@ public class Product {
 
     @Column(name="QUANTITY")
     private int quantity;
+
+    @Column(name="CREATED_AT")
+    private Timestamp createdAt;
+
+    @Column(name="UPDATED_AT")
+    private Timestamp updatedAt;
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     public long getId() {
         return id;
