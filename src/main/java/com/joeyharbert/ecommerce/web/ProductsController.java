@@ -3,6 +3,7 @@ package com.joeyharbert.ecommerce.web;
 import com.joeyharbert.ecommerce.business.ProductsService;
 import com.joeyharbert.ecommerce.data.Product;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -17,4 +18,7 @@ public class ProductsController {
 
     @GetMapping(path = "/products")
     public List<Product> getProducts() { return this.productsService.getAllProducts(); }
+
+    @GetMapping(path = "/products/{id}")
+    public Product getProductById(@PathVariable(value="id") Long id) { return this.productsService.getProductById(id); }
 }
