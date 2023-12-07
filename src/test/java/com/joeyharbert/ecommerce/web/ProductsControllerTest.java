@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.joeyharbert.ecommerce.business.ProductsService;
 import com.joeyharbert.ecommerce.data.Product;
+import com.joeyharbert.ecommerce.data.ProductRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -15,11 +16,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -74,7 +76,7 @@ public class ProductsControllerTest {
     public void givenProduct_whenGetProduct_thenStatus200() throws Exception {
         when(productsService.getProductById(anyLong())).thenReturn(testProduct);
 
-        MvcResult result = this.mockMvc.perform(get("/products/{id}", 1)).andDo(print())
+        MvcResult result = this.mockMvc.perform(get("/products/{id}", id)).andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -94,5 +96,32 @@ public class ProductsControllerTest {
 
         String response = result.getResponse().getContentAsString();
         assertThat(response).isEqualTo("{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null}");
+    }
+
+    @Test
+    public void givenNoBody_whenAddProduct_thenStatus400() throws Exception {
+        this.mockMvc.perform(post("/products")).andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void givenUpdatedProduct_whenUpdateProduct_thenStatus200() throws Exception {
+        //happy path
+        when(productsService.updateProduct(anyMap(), anyLong())).thenReturn(testProduct);
+
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("name", "updated name");
+
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(updates);
+        MvcResult result = this.mockMvc.perform(patch("/products/{id}", id).contentType(MediaType.APPLICATION_JSON).content(json)).andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String response = result.getResponse().getContentAsString();
+        assertThat(response).isEqualTo("{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null}");
+
+        //sad path
+        this.mockMvc.perform(patch("/products/{id}", id)).andDo(print()).andExpect(status().isBadRequest());
     }
 }

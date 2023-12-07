@@ -32,10 +32,6 @@ public class ProductsService {
     }
 
     public Product addProduct(Product inputProduct) {
-        if (null == inputProduct) {
-            throw new RuntimeException("Product cannot be null");
-        }
-
         Timestamp currentDate = new Timestamp(System.currentTimeMillis());
         inputProduct.setCreatedAt(currentDate);
         inputProduct.setUpdatedAt(currentDate);
@@ -44,11 +40,7 @@ public class ProductsService {
         return inputProduct;
     }
 
-    public Product updateProduct(Map<String, Object> updates, Long id) {
-        if (null == id) {
-            throw new RuntimeException("id cannot be null");
-        }
-
+    public Product updateProduct(Map<String, Object> updates, Long id) throws RuntimeException {
         Optional<Product> productOptional = productRepository.findById(id);
 
         if (productOptional.isEmpty()) {
