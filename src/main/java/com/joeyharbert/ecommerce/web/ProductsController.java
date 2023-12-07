@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class ProductsController {
@@ -24,4 +25,7 @@ public class ProductsController {
     @PostMapping(path = "/products")
     @ResponseStatus(HttpStatus.CREATED)
     public  @ResponseBody Product addProduct(@RequestBody Product product) { return this.productsService.addProduct(product); }
+
+    @PatchMapping(path = "/products/{id}")
+    public @ResponseBody Product updateProduct(@RequestBody Map<String, Object> updates, @PathVariable(value="id") Long id) { return this.productsService.updateProduct(updates, id); }
 }

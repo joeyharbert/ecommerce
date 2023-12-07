@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -41,5 +42,25 @@ public class ProductsService {
 
         this.productRepository.save(inputProduct);
         return inputProduct;
+    }
+
+    public Product updateProduct(Map<String, Object> updates, Long id) {
+        if (null == id) {
+            throw new RuntimeException("id cannot be null");
+        }
+
+        Optional<Product> productOptional = productRepository.findById(id);
+
+        if (productOptional.isEmpty()) {
+            throw new RuntimeException("Product does not exist");
+        }
+        Product product = productOptional.get();
+        product.setName(null == updates.get("name") ? product.getName() : (String) updates.get("name"));
+        product.setPrice(null == updates.get("price") ? product.getPrice() : (double) updates.get("price"));
+        product.setDescription(null == updates.get("description") ? product.getDescription() : (String) updates.get("description"));
+        product.setQuantity(null == updates.get("quantity") ? product.getQuantity() : (int) updates.get("quantity"));
+        product.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+        productRepository.save(product);
+        return product;
     }
 }
