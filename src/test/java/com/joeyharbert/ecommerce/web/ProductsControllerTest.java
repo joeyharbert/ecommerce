@@ -84,6 +84,13 @@ public class ProductsControllerTest {
         assertThat(response).isEqualTo("{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null}");
     }
 
+    @Test public void givenBadId_whenGetProduct_thenStatus404() throws Exception {
+        when(productsService.getProductById(anyLong())).thenThrow(new RuntimeException());
+
+        this.mockMvc.perform(get("/products/{id}", id)).andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
     @Test
     public void givenProduct_whenAddProduct_thenStatus201() throws Exception {
         when(productsService.addProduct(any(Product.class))).thenReturn(testProduct);
@@ -107,10 +114,10 @@ public class ProductsControllerTest {
     @Test
     public void givenUpdatedProduct_whenUpdateProduct_thenStatus200() throws Exception {
         //happy path
-        when(productsService.updateProduct(anyMap(), anyLong())).thenReturn(testProduct);
-
         Map<String, Object> updates = new HashMap<>();
         updates.put("name", "updated name");
+
+        when(productsService.updateProduct(updates, id)).thenReturn(testProduct);
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(updates);
@@ -120,8 +127,34 @@ public class ProductsControllerTest {
 
         String response = result.getResponse().getContentAsString();
         assertThat(response).isEqualTo("{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null}");
+    }
 
-        //sad path
+    @Test
+    public void givenNoBody_whenUpdateProduct_thenStatus400() throws Exception {
         this.mockMvc.perform(patch("/products/{id}", id)).andDo(print()).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void givenBadId_whenUpdateProduct_thenStatus404() throws Exception {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("name", "updated name");
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(updates);
+        when(productsService.updateProduct(anyMap(), anyLong())).thenThrow(new RuntimeException());
+        this.mockMvc.perform(patch("/products/{id}", 2L).contentType(MediaType.APPLICATION_JSON).content(json)).andDo(print()).andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void givenProductId_whenDestroyProduct_thenStatus200() throws Exception {
+        this.mockMvc.perform(delete("/products/{id}", id)).andDo(print()).andExpect(status().isOk());
+        verify(productsService, times(1)).destroyProduct(id);
+    }
+
+    @Test
+    public void givenBadProductId_whenDestroyProduct_thenStatus404() throws Exception {
+        doThrow(new RuntimeException()).when(productsService).destroyProduct(id);
+
+        this.mockMvc.perform(delete("/products/{id}", id)).andDo(print()).andExpect(status().isNotFound());
+
     }
 }

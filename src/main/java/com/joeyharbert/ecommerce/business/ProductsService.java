@@ -28,7 +28,11 @@ public class ProductsService {
     public Product getProductById(long id) {
         Optional<Product> productOptional = productRepository.findById(id);
 
-        return productOptional.orElseGet(Product::new);
+        if (productOptional.isEmpty()) {
+            throw new RuntimeException("Product does not exist");
+        }
+
+        return productOptional.get();
     }
 
     public Product addProduct(Product inputProduct) {
@@ -54,5 +58,16 @@ public class ProductsService {
         product.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         productRepository.save(product);
         return product;
+    }
+
+    public void destroyProduct(Long id) throws RuntimeException {
+        Optional<Product> productOptional = productRepository.findById(id);
+
+        if (productOptional.isPresent()) {
+            Product product = productOptional.get();
+            productRepository.delete(product);
+        } else {
+            throw new RuntimeException("Product does not exist");
+        }
     }
 }

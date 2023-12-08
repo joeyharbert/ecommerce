@@ -14,7 +14,7 @@ import java.util.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -32,6 +32,7 @@ public class ProductsServiceTest {
     int quantity;
     double price;
     Product testProduct;
+    String expectedErrorMessage;
 
     @BeforeAll
     public void setup() {
@@ -46,6 +47,7 @@ public class ProductsServiceTest {
         testProduct.setDescription(description);
         testProduct.setQuantity(quantity);
         testProduct.setPrice(price);
+        expectedErrorMessage = "Product does not exist";
     }
 
     @Test
@@ -72,9 +74,10 @@ public class ProductsServiceTest {
         //sad path
         when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        result = productsService.getProductById(4);
+        Exception exception = assertThrows(RuntimeException.class, () -> {productsService.getProductById(4L);});
+        String actualMessage = exception.getMessage();
 
-        assertThat(result.getId()).isEqualTo(0L);
+        assertThat(expectedErrorMessage).isEqualTo(actualMessage);
     }
 
     @Test
@@ -105,9 +108,27 @@ public class ProductsServiceTest {
         when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
         Exception exception = assertThrows(RuntimeException.class, () ->  {productsService.updateProduct(updates, 2L);});
 
-        String expectedMessage = "Product does not exist";
         String actualMessage = exception.getMessage();
 
-        assertThat(expectedMessage).isEqualTo(actualMessage);
+        assertThat(expectedErrorMessage).isEqualTo(actualMessage);
+    }
+
+    @Test
+    public void givenProductId_whenDestroyProduct_thenDeleteCalled() throws RuntimeException {
+        //happy path
+        when(productRepository.findById(id)).thenReturn(Optional.of(testProduct));
+
+        productsService.destroyProduct(id);
+
+        verify(productRepository, times(1)).delete(testProduct);
+
+        //sad path
+        when(productRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {productsService.destroyProduct(2L);});
+
+        String actualMessage = exception.getMessage();
+
+        assertThat(expectedErrorMessage).isEqualTo(actualMessage);
     }
 }
