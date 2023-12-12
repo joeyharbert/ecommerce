@@ -2,6 +2,7 @@ package com.joeyharbert.ecommerce.data;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -14,23 +15,60 @@ public class Product {
     @Column(name="id")
     private long id;
 
-    @Column(name="NAME")
+    @Column(name="name")
     private String name;
 
-    @Column(name="PRICE")
+    @Column(name="price")
     private double price;
 
-    @Column(name="DESCRIPTION")
+    @Column(name="description")
     private String description;
 
-    @Column(name="QUANTITY")
+    @Column(name="quantity")
     private int quantity;
 
-    @Column(name="CREATED_AT")
+    @Column(name="created_at")
     private Timestamp createdAt;
 
-    @Column(name="UPDATED_AT")
+    @Column(name="updated_at")
     private Timestamp updatedAt;
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name="supplier_id", nullable = false)
+    @OnDelete(action= OnDeleteAction.CASCADE)
+    private Supplier supplier;
+
+    public Product() {
+
+    }
+
+    public Product(String name, double price, String description, int quantity, Supplier supplier) {
+        this.name = name;
+        this.price = price;
+        this.description = description;
+        this.quantity = quantity;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.supplier = supplier;
+    }
+
+    public Product(String name, double price, String description, int quantity, Timestamp createdAt, Timestamp updatedAt, Supplier supplier) {
+        this.name = name;
+        this.price = price;
+        this.description = description;
+        this.quantity = quantity;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.supplier = supplier;
+    }
+
+    public Supplier getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(Supplier supplier) {
+        this.supplier = supplier;
+    }
 
     public Timestamp getCreatedAt() {
         return createdAt;

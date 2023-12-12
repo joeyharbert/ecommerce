@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.joeyharbert.ecommerce.business.ProductsService;
 import com.joeyharbert.ecommerce.data.Product;
 import com.joeyharbert.ecommerce.data.ProductRepository;
+import com.joeyharbert.ecommerce.data.Supplier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -42,6 +43,8 @@ public class ProductsControllerTest {
     int quantity;
     double price;
     Product testProduct;
+    Supplier testSupplier;
+    long supplierId;
 
     @BeforeAll
     public void setup() {
@@ -50,12 +53,11 @@ public class ProductsControllerTest {
         description = "test description";
         quantity = 1;
         price = 9.99;
-        testProduct = new Product();
+        supplierId = 1L;
+        testSupplier = new Supplier("test name", "test@test.com", "555-555-5555");
+        testSupplier.setId(supplierId);
+        testProduct = new Product(name, price, description, quantity, testSupplier);
         testProduct.setId(id);
-        testProduct.setName(name);
-        testProduct.setDescription(description);
-        testProduct.setQuantity(quantity);
-        testProduct.setPrice(price);
     }
 
     @Test
@@ -69,7 +71,7 @@ public class ProductsControllerTest {
                 .andReturn();
 
         String response = result.getResponse().getContentAsString();
-        assertThat(response).isEqualTo("[{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null}]");
+        assertThat(response).isEqualTo("[{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null,\"supplier\":{\"id\":1,\"name\":\"test name\",\"email\":\"test@test.com\",\"phoneNumber\":\"555-555-5555\",\"createdAt\":null,\"updatedAt\":null}}]");
     }
 
     @Test
@@ -81,7 +83,7 @@ public class ProductsControllerTest {
                 .andReturn();
 
         String response = result.getResponse().getContentAsString();
-        assertThat(response).isEqualTo("{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null}");
+        assertThat(response).isEqualTo("{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null,\"supplier\":{\"id\":1,\"name\":\"test name\",\"email\":\"test@test.com\",\"phoneNumber\":\"555-555-5555\",\"createdAt\":null,\"updatedAt\":null}}");
     }
 
     @Test public void givenBadId_whenGetProduct_thenStatus404() throws Exception {
@@ -102,12 +104,22 @@ public class ProductsControllerTest {
                 .andReturn();
 
         String response = result.getResponse().getContentAsString();
-        assertThat(response).isEqualTo("{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null}");
+        assertThat(response).isEqualTo("{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null,\"supplier\":{\"id\":1,\"name\":\"test name\",\"email\":\"test@test.com\",\"phoneNumber\":\"555-555-5555\",\"createdAt\":null,\"updatedAt\":null}}");
     }
 
     @Test
     public void givenNoBody_whenAddProduct_thenStatus400() throws Exception {
         this.mockMvc.perform(post("/products")).andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void givenBadSupplier_whenAddProduct_thenStatus400() throws Exception {
+        when(productsService.addProduct(any(Product.class))).thenThrow(new RuntimeException());
+
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(testProduct);
+        this.mockMvc.perform(post("/products").contentType(MediaType.APPLICATION_JSON).content(json)).andDo(print())
                 .andExpect(status().isBadRequest());
     }
 
@@ -126,7 +138,7 @@ public class ProductsControllerTest {
                 .andReturn();
 
         String response = result.getResponse().getContentAsString();
-        assertThat(response).isEqualTo("{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null}");
+        assertThat(response).isEqualTo("{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null,\"supplier\":{\"id\":1,\"name\":\"test name\",\"email\":\"test@test.com\",\"phoneNumber\":\"555-555-5555\",\"createdAt\":null,\"updatedAt\":null}}");
     }
 
     @Test

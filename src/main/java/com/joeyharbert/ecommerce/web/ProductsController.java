@@ -31,7 +31,13 @@ public class ProductsController {
 
     @PostMapping(path = "/products")
     @ResponseStatus(HttpStatus.CREATED)
-    public  @ResponseBody Product addProduct(@RequestBody Product product) { return this.productsService.addProduct(product); }
+    public  @ResponseBody Product addProduct(@RequestBody Product product) {
+        try {
+        return this.productsService.addProduct(product);
+        } catch (RuntimeException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        }
+    }
 
     @PatchMapping(path = "/products/{id}")
     public @ResponseBody Product updateProduct(@RequestBody Map<String, Object> updates, @PathVariable(value="id") Long id) {

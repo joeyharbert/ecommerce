@@ -2,6 +2,8 @@ package com.joeyharbert.ecommerce.business;
 
 import com.joeyharbert.ecommerce.data.Product;
 import com.joeyharbert.ecommerce.data.ProductRepository;
+import com.joeyharbert.ecommerce.data.Supplier;
+import com.joeyharbert.ecommerce.data.SupplierRepository;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -13,9 +15,11 @@ import java.util.Optional;
 @Service
 public class ProductsService {
     private final ProductRepository productRepository;
+    private final SupplierRepository supplierRepository;
 
-    public ProductsService(ProductRepository productRepository) {
+    public ProductsService(ProductRepository productRepository, SupplierRepository supplierRepository) {
         this.productRepository = productRepository;
+        this.supplierRepository = supplierRepository;
     }
 
     public List<Product> getAllProducts() {
@@ -39,6 +43,14 @@ public class ProductsService {
         Timestamp currentDate = new Timestamp(System.currentTimeMillis());
         inputProduct.setCreatedAt(currentDate);
         inputProduct.setUpdatedAt(currentDate);
+
+        Optional<Supplier> supplierOptional = this.supplierRepository.findById(inputProduct.getSupplier().getId());
+
+        if (supplierOptional.isEmpty()) {
+            throw new RuntimeException("Supplier must exist");
+        }
+
+        inputProduct.setSupplier(supplierOptional.get());
 
         this.productRepository.save(inputProduct);
         return inputProduct;

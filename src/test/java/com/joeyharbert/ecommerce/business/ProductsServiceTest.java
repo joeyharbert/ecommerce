@@ -2,6 +2,8 @@ package com.joeyharbert.ecommerce.business;
 
 import com.joeyharbert.ecommerce.data.Product;
 import com.joeyharbert.ecommerce.data.ProductRepository;
+import com.joeyharbert.ecommerce.data.Supplier;
+import com.joeyharbert.ecommerce.data.SupplierRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -22,6 +24,9 @@ public class ProductsServiceTest {
     @MockBean
     private ProductRepository productRepository;
 
+    @MockBean
+    private SupplierRepository supplierRepository;
+
     @Autowired
     private ProductsService productsService;
 
@@ -32,7 +37,11 @@ public class ProductsServiceTest {
     int quantity;
     double price;
     Product testProduct;
-    String expectedErrorMessage;
+    Supplier testSupplier;
+    long supplierId;
+
+    String missingProductErrorMessage;
+    String missingSupplierErrorMessage;
 
     @BeforeAll
     public void setup() {
@@ -41,13 +50,13 @@ public class ProductsServiceTest {
         description = "test description";
         quantity = 1;
         price = 9.99;
-        testProduct = new Product();
+        supplierId = 1L;
+        testSupplier = new Supplier("test name", "test@test.com", "555-555-5555");
+        testSupplier.setId(supplierId);
+        testProduct = new Product(name, price, description, quantity, testSupplier);
         testProduct.setId(id);
-        testProduct.setName(name);
-        testProduct.setDescription(description);
-        testProduct.setQuantity(quantity);
-        testProduct.setPrice(price);
-        expectedErrorMessage = "Product does not exist";
+        missingProductErrorMessage = "Product does not exist";
+        missingSupplierErrorMessage = "Supplier must exist";
     }
 
     @Test
@@ -77,18 +86,29 @@ public class ProductsServiceTest {
         Exception exception = assertThrows(RuntimeException.class, () -> {productsService.getProductById(4L);});
         String actualMessage = exception.getMessage();
 
-        assertThat(expectedErrorMessage).isEqualTo(actualMessage);
+        assertThat(missingProductErrorMessage).isEqualTo(actualMessage);
     }
 
     @Test
     public void givenNewProduct_whenAddProduct_thenReturnThatProduct() {
         when(productRepository.save(testProduct)).thenReturn(testProduct);
+        when(supplierRepository.findById(supplierId)).thenReturn(Optional.of(testSupplier));
 
         Product result = productsService.addProduct(testProduct);
 
         assertThat(result).isEqualTo(testProduct);
         assertThat(result.getCreatedAt()).isNotNull();
         assertThat(result.getUpdatedAt()).isNotNull();
+    }
+
+    @Test
+    public void givenNewProductWithBadSupplierId_whenAddProduct_thenThrowError() {
+        when(supplierRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(RuntimeException.class, () -> {productsService.addProduct(testProduct);});
+        String actualMessage = exception.getMessage();
+
+        assertThat(missingSupplierErrorMessage).isEqualTo(actualMessage);
     }
 
     @Test
@@ -110,7 +130,7 @@ public class ProductsServiceTest {
 
         String actualMessage = exception.getMessage();
 
-        assertThat(expectedErrorMessage).isEqualTo(actualMessage);
+        assertThat(missingProductErrorMessage).isEqualTo(actualMessage);
     }
 
     @Test
@@ -129,6 +149,6 @@ public class ProductsServiceTest {
 
         String actualMessage = exception.getMessage();
 
-        assertThat(expectedErrorMessage).isEqualTo(actualMessage);
+        assertThat(missingProductErrorMessage).isEqualTo(actualMessage);
     }
 }
