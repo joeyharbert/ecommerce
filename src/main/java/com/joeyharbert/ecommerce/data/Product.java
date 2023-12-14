@@ -6,6 +6,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.Set;
 
 @Entity
 @Table(name="products")
@@ -38,6 +39,9 @@ public class Product {
     @OnDelete(action= OnDeleteAction.CASCADE)
     private Supplier supplier;
 
+    @OneToMany(mappedBy="product")
+    private Set<Image> images;
+
     public Product() {
 
     }
@@ -64,6 +68,14 @@ public class Product {
 
     public Supplier getSupplier() {
         return supplier;
+    }
+
+    public Set<Image> getImages() {
+        return images;
+    }
+
+    public void setImages(Set<Image> images) {
+        this.images = images;
     }
 
     public void setSupplier(Supplier supplier) {

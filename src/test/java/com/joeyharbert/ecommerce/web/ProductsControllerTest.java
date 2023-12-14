@@ -3,6 +3,7 @@ package com.joeyharbert.ecommerce.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.joeyharbert.ecommerce.business.ProductsService;
+import com.joeyharbert.ecommerce.data.Image;
 import com.joeyharbert.ecommerce.data.Product;
 import com.joeyharbert.ecommerce.data.ProductRepository;
 import com.joeyharbert.ecommerce.data.Supplier;
@@ -16,9 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -44,7 +43,11 @@ public class ProductsControllerTest {
     double price;
     Product testProduct;
     Supplier testSupplier;
+
+    Image testImage;
     long supplierId;
+
+    String productString;
 
     @BeforeAll
     public void setup() {
@@ -58,6 +61,12 @@ public class ProductsControllerTest {
         testSupplier.setId(supplierId);
         testProduct = new Product(name, price, description, quantity, testSupplier);
         testProduct.setId(id);
+        testImage = new Image();
+        testImage.setUrl("test.jpg");
+        Set<Image> images = new HashSet<>();
+        images.add(testImage);
+        testProduct.setImages(images);
+        productString = "{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null,\"supplier\":{\"id\":1,\"name\":\"test name\",\"email\":\"test@test.com\",\"phoneNumber\":\"555-555-5555\",\"createdAt\":null,\"updatedAt\":null},\"images\":[{\"id\":0,\"url\":\"test.jpg\",\"createdAt\":null,\"updatedAt\":null}]}";
     }
 
     @Test
@@ -71,7 +80,7 @@ public class ProductsControllerTest {
                 .andReturn();
 
         String response = result.getResponse().getContentAsString();
-        assertThat(response).isEqualTo("[{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null,\"supplier\":{\"id\":1,\"name\":\"test name\",\"email\":\"test@test.com\",\"phoneNumber\":\"555-555-5555\",\"createdAt\":null,\"updatedAt\":null}}]");
+        assertThat(response).isEqualTo("[" + productString + "]");
     }
 
     @Test
@@ -83,7 +92,7 @@ public class ProductsControllerTest {
                 .andReturn();
 
         String response = result.getResponse().getContentAsString();
-        assertThat(response).isEqualTo("{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null,\"supplier\":{\"id\":1,\"name\":\"test name\",\"email\":\"test@test.com\",\"phoneNumber\":\"555-555-5555\",\"createdAt\":null,\"updatedAt\":null}}");
+        assertThat(response).isEqualTo(productString);
     }
 
     @Test public void givenBadId_whenGetProduct_thenStatus404() throws Exception {
@@ -104,7 +113,7 @@ public class ProductsControllerTest {
                 .andReturn();
 
         String response = result.getResponse().getContentAsString();
-        assertThat(response).isEqualTo("{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null,\"supplier\":{\"id\":1,\"name\":\"test name\",\"email\":\"test@test.com\",\"phoneNumber\":\"555-555-5555\",\"createdAt\":null,\"updatedAt\":null}}");
+        assertThat(response).isEqualTo(productString);
     }
 
     @Test
@@ -138,7 +147,7 @@ public class ProductsControllerTest {
                 .andReturn();
 
         String response = result.getResponse().getContentAsString();
-        assertThat(response).isEqualTo("{\"id\":1,\"name\":\"test name\",\"price\":9.99,\"description\":\"test description\",\"quantity\":1,\"createdAt\":null,\"updatedAt\":null,\"supplier\":{\"id\":1,\"name\":\"test name\",\"email\":\"test@test.com\",\"phoneNumber\":\"555-555-5555\",\"createdAt\":null,\"updatedAt\":null}}");
+        assertThat(response).isEqualTo(productString);
     }
 
     @Test
