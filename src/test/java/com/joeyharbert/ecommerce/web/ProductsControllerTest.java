@@ -95,7 +95,7 @@ public class ProductsControllerTest {
 
     @Test
     public void givenProduct_whenAddProduct_thenStatus201() throws Exception {
-        when(productsService.addProduct(any(Product.class))).thenReturn(testProduct);
+        when(productsService.addProduct(anyMap())).thenReturn(testProduct);
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(testProduct);
@@ -115,7 +115,7 @@ public class ProductsControllerTest {
 
     @Test
     public void givenBadSupplier_whenAddProduct_thenStatus400() throws Exception {
-        when(productsService.addProduct(any(Product.class))).thenThrow(new RuntimeException());
+        when(productsService.addProduct(anyMap())).thenThrow(new RuntimeException());
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(testProduct);

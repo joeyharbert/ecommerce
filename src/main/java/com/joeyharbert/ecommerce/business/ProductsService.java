@@ -39,21 +39,24 @@ public class ProductsService {
         return productOptional.get();
     }
 
-    public Product addProduct(Product inputProduct) {
+    public Product addProduct(Map<String, Object> input) {
+        String name = (String)input.get("name");
+        double price = (double)input.get("price");
+        String description = (String)input.get("description");
+        int quantity = (int)input.get("quantity");
+        Long supplierId = (Long)input.get("supplier_id");
         Timestamp currentDate = new Timestamp(System.currentTimeMillis());
-        inputProduct.setCreatedAt(currentDate);
-        inputProduct.setUpdatedAt(currentDate);
 
-        Optional<Supplier> supplierOptional = this.supplierRepository.findById(inputProduct.getSupplier().getId());
+        Optional<Supplier> supplierOptional = this.supplierRepository.findById(supplierId);
 
         if (supplierOptional.isEmpty()) {
             throw new RuntimeException("Supplier must exist");
         }
 
-        inputProduct.setSupplier(supplierOptional.get());
+        Product product = new Product(name, price, description, quantity, currentDate, currentDate, supplierOptional.get());
 
-        this.productRepository.save(inputProduct);
-        return inputProduct;
+        this.productRepository.save(product);
+        return product;
     }
 
     public Product updateProduct(Map<String, Object> updates, Long id) throws RuntimeException {

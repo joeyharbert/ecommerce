@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
+@CrossOrigin(origins = "https://mini-capstone.peterxjang.com")
 public class ProductsController {
     private final ProductsService productsService;
 
@@ -32,9 +33,9 @@ public class ProductsController {
     }
 
     @PostMapping(path = "/products")
-    public  ResponseEntity<Product> addProduct(@RequestBody Product inputProduct) {
+    public  ResponseEntity<Product> addProduct(@RequestBody Map<String, Object> input) {
         try {
-            Product finalProduct = this.productsService.addProduct(inputProduct);
+            Product finalProduct = this.productsService.addProduct(input);
             return new ResponseEntity<>(finalProduct, HttpStatus.CREATED);
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);

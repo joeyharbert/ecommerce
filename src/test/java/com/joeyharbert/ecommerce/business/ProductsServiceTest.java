@@ -38,6 +38,8 @@ public class ProductsServiceTest {
     double price;
     Product testProduct;
     Supplier testSupplier;
+
+    Map<String, Object> testMap;
     long supplierId;
 
     String missingProductErrorMessage;
@@ -57,6 +59,13 @@ public class ProductsServiceTest {
         testProduct.setId(id);
         missingProductErrorMessage = "Product does not exist";
         missingSupplierErrorMessage = "Supplier must exist";
+        testMap = Map.of(
+                "name", name,
+                "price", price,
+                "description", description,
+                "quantity", quantity,
+                "supplier_id", supplierId
+        );
     }
 
     @Test
@@ -91,12 +100,16 @@ public class ProductsServiceTest {
 
     @Test
     public void givenNewProduct_whenAddProduct_thenReturnThatProduct() {
-        when(productRepository.save(testProduct)).thenReturn(testProduct);
+        when(productRepository.save(any(Product.class))).thenReturn(testProduct);
         when(supplierRepository.findById(supplierId)).thenReturn(Optional.of(testSupplier));
 
-        Product result = productsService.addProduct(testProduct);
+        Product result = productsService.addProduct(testMap);
 
-        assertThat(result).isEqualTo(testProduct);
+        assertThat(result.getName()).isEqualTo(testProduct.getName());
+        assertThat(result.getPrice()).isEqualTo(testProduct.getPrice());
+        assertThat(result.getDescription()).isEqualTo(testProduct.getDescription());
+        assertThat(result.getQuantity()).isEqualTo(testProduct.getQuantity());
+        assertThat(result.getSupplier()).isEqualTo(testProduct.getSupplier());
         assertThat(result.getCreatedAt()).isNotNull();
         assertThat(result.getUpdatedAt()).isNotNull();
     }
@@ -105,7 +118,7 @@ public class ProductsServiceTest {
     public void givenNewProductWithBadSupplierId_whenAddProduct_thenThrowError() {
         when(supplierRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(RuntimeException.class, () -> {productsService.addProduct(testProduct);});
+        Exception exception = assertThrows(RuntimeException.class, () -> {productsService.addProduct(testMap);});
         String actualMessage = exception.getMessage();
 
         assertThat(missingSupplierErrorMessage).isEqualTo(actualMessage);
